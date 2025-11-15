@@ -2,13 +2,17 @@ package com.example.statussaver.views.adapters
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.statussaver.R
 import com.example.statussaver.databinding.ItemMediaBinding
 import com.example.statussaver.models.MEDIA_TYPE_IMAGE
 import com.example.statussaver.models.MediaModel
+import com.example.statussaver.utils.saveStatus
 
 class MediaAdapter (val list: ArrayList<MediaModel>, val context: Context) :
     RecyclerView.Adapter<MediaAdapter.ViewHolder>() {
@@ -18,9 +22,12 @@ class MediaAdapter (val list: ArrayList<MediaModel>, val context: Context) :
         fun bind (mediaModel: MediaModel) {
             binding.apply {
                 Glide.with(context)
-                    .load(mediaModel.pathUri)
+                    .load(mediaModel.pathUri.toUri())
                     .into(statusImage)
 
+                if (mediaModel.type == MEDIA_TYPE_IMAGE) {
+                    statusPlay.visibility = View.GONE
+                }
                 val downloadImage = if (mediaModel.isDownloaded) {
                     R.drawable.ic_downloaded
                 }
@@ -37,6 +44,20 @@ class MediaAdapter (val list: ArrayList<MediaModel>, val context: Context) :
                     }
                     else {
                         // goto video preview
+                    }
+                }
+
+                statusDownload.setOnClickListener {
+                    val isDownloaded = context.saveStatus(mediaModel)
+                    if (isDownloaded) {
+                        // status is downloaded
+                        Toast.makeText(context, "Status Downloaded", Toast.LENGTH_SHORT).show()
+                        mediaModel.isDownloaded = true
+                        statusDownload.setImageResource(R.drawable.ic_downloaded)
+                    }
+                    else {
+                        // unable to download
+                        Toast.makeText(context, "Unable to Save Status", Toast.LENGTH_SHORT).show()
                     }
                 }
             }

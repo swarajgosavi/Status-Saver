@@ -7,11 +7,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.example.statussaver.data.StatusRepo
 import com.example.statussaver.databinding.FragmentStatusBinding
 import com.example.statussaver.utils.Constants
 import com.example.statussaver.utils.SharedPrefKeys
 import com.example.statussaver.utils.SharedPrefUtils
 import com.example.statussaver.utils.getFolderPermissions
+import com.example.statussaver.viewmodels.StatusViewModel
+import com.example.statussaver.viewmodels.factories.StatusViewModelFactory
 import com.example.statussaver.views.adapters.MediaViewPagerAdapter
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -25,13 +30,16 @@ class FragmentStatus : Fragment() {
     private val WHATSAPP_BUSINESS_REQUEST_CODE = 102
 
     private val viewPagerTitles = arrayOf("Images", "Videos")
-
+    lateinit var viewModel: StatusViewModel
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding.apply {
             arguments?.let {
+                val repo = StatusRepo(requireActivity())
+                viewModel = ViewModelProvider(requireActivity(), StatusViewModelFactory(repo)) [StatusViewModel::class.java]
+
                 type = it.getString(Constants.FRAGMENT_TYPE_KEY, "")
                 tempText.text = type
                 when (type) {
@@ -100,11 +108,13 @@ class FragmentStatus : Fragment() {
     fun getWhatsAppStatuses() {
         // function to get whatApp statuses
         binding.permissionLayoutHolder.visibility = View.GONE
+        viewModel.getWhatsAppStatuses()
     }
 
     fun getWhatsAppBusinessStatuses() {
         // function to get whatApp statuses
         binding.permissionLayoutHolder.visibility = View.GONE
+        viewModel.getWhatsAppBusinessStatuses()
     }
 
     @Deprecated("Deprecated in Java")
